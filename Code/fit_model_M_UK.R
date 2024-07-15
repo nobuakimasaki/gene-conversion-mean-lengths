@@ -6,7 +6,7 @@ source("fns_sim.R")
 set.seed(26)
 
 # Detect the number of available cores
-num_cores <- 20
+num_cores <- 12
 
 read.tracts <- function(chr) {
   str <- paste0("/projects/browning/brwnlab/sharon/for_nobu/gc_length/ukbiobank/chr", chr, ".ibdclust2cM_trim1_combinedoffsets_v6.inf_obs_tracts2")
@@ -69,7 +69,7 @@ get_l_psi <- function(MAF.df, df, M, region, MAF.ceil, remove.singletons) {
   print(nrow(df))
   
   tracts_lst <- split(df, seq(nrow(df)))
-  psi_lst <- lapply(tracts_lst, calculate_psi, psi = psi, region = region, length_chrom = length(psi), debias = TRUE)
+  psi_lst <- lapply(tracts_lst, calculate_psi, psi = psi, region = region, length_chrom = length(psi), debias = FALSE)
   l_lst <- lapply(tracts_lst, function(x) {x[2]-x[1]+1})
   print("finished processing data for 1 chromosome")
   
@@ -104,5 +104,5 @@ print("length of psi: ")
 print(length(psi_lst))
 
 res.0.5.1M <- fit_model_M(l_lst, psi_lst, 1500, TRUE)
-file_name <- paste0("res.UK_Biobank.1M.1500.region.5000.geom.ibdclust2cM.MAF.0.5.boot.grouped.rds")
+file_name <- paste0("res.UK_Biobank.1M.1500.region.5000.geom.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
 saveRDS(res.0.5.1M, file_name)
