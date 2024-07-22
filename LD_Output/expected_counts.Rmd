@@ -145,7 +145,7 @@ p3
 
 ```{r}
 # Create a custom legend
-legend_labels <- c("Empirical CDF from simulation study", "Expected CDF from model", "Empirical CDF from vcf file")
+legend_labels <- c("Empirical CDF from simulation study", "Expected CDF from model (F(l))", "Empirical CDF from vcf file")
 legend_colors <- c("#000000", "#E41A1C", "#377EB8")
 
 # Create a data frame for the legend
@@ -162,7 +162,7 @@ legend_data$color <- factor(legend_data$color, levels = c("#000000", "#E41A1C", 
 # Create a blank plot for the custom legend
 legend_plot <- ggplot(legend_data, aes(x = x, y = y)) +
   geom_point(aes(color = color), size = 5) + theme_bw() +
-  scale_color_manual(labels = c("Empirical CDF from simulation study", "Expected CDF from model", "Empirical CDF from vcf file"), values = c("#000000", "#E41A1C", "#377EB8")) + 
+  scale_color_manual(labels = c("Empirical CDF from simulation study", "Expected CDF from model (F(l))", "Empirical CDF from vcf file"), values = c("#000000", "#E41A1C", "#377EB8")) + 
   theme(legend.title = element_blank(), 
         legend.background = element_rect(color = "black", size = 0.5),  # Add a box around the legend
         legend.key = element_rect(fill = "white", color = "black"))     # Add a border to legend keys)
