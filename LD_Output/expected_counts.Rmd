@@ -120,14 +120,15 @@ obs.cnts.df$cdf <- cumsum(obs.cnts.df$freq)
 exp.cnts.df$cdf.trunc <- cumsum(exp.cnts.df$freq.trunc)
 obs.cnts.df$cdf.trunc <- cumsum(obs.cnts.df$freq.trunc)
 
-p1 <- ggplot(obs.cnts.df, aes(x = l, y = cdf)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = exp.cnts.df, color = "#E41A1C", size = 1, alpha = 0.5) + theme_bw() + labs(y = "CDF") + theme(text = element_text(size=15)) + ylim(0, 1)
+p1 <- ggplot(obs.cnts.df, aes(x = l, y = cdf)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = exp.cnts.df, color = "#E41A1C", size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density") + theme(text = element_text(size=15), plot.title = element_text(hjust = 0.5)) + ylim(0, 1) + geom_text(aes(x = 50, y = 0.93), label = "F(l)", color = "#E41A1C", alpha = 0.5, size = 5) + geom_text(aes(x = 50, y = 0.77), label = expression(paste(widehat(F)^sim, (l))), color = "#000000", alpha = 0.5, size = 5) 
 
 p2 <- ggplot(obs.cnts.df %>% filter(l > 1), aes(x = l, y = cdf.trunc)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = exp.cnts.df %>% filter(l > 1), color = "#E41A1C", size = 1, alpha = 0.5) + theme_bw() + labs(y = "") + 
-  theme(text = element_text(size=15))       # Optional: Remove y-axis title)
+  theme(text = element_text(size=15), plot.title = element_text(hjust = 0.5)) + geom_text(aes(x = 375, y = 0.65), label = expression(F[2](l)), color = "#E41A1C", alpha = 0.5, size = 5) + geom_text(aes(x = 375, y = 0.80), label = expression(paste(widehat(F)[2]^sim, (l))), color = "#000000", alpha = 0.5, size = 5)    
 ```
 
 ```{r}
 p1
+p2
 ```
 
 
@@ -135,8 +136,7 @@ p1
 ### emp vcf == emp sim
 LD.cnts.df$cdf <- cumsum(LD.cnts.df$freq)
 
-p3 <- ggplot(obs.cnts.df, aes(x = l, y = cdf)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = LD.cnts.df, color = "#377EB8", size = 1, alpha = 0.5) + theme_bw() + labs(y = "CDF") + theme(text = element_text(size=15)) + 
-  scale_color_brewer(palette = "Set1") + ylim(0, 1)
+p3 <- ggplot(obs.cnts.df, aes(x = l, y = cdf)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = LD.cnts.df, color = "#377EB8", size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density") + theme(text = element_text(size=15), plot.title = element_text(hjust = 0.5)) + ylim(0, 1) + geom_text(aes(x = 50, y = 0.85), label = expression(paste(widehat(F)^vcf, (l))), color = "#377EB8", alpha = 0.5, size = 5) + geom_text(aes(x = 50, y = 0.77), label = expression(paste(widehat(F)^sim, (l))), color = "#000000", alpha = 0.5, size = 5) 
 ```
 
 ```{r}
@@ -145,7 +145,7 @@ p3
 
 ```{r}
 # Create a custom legend
-legend_labels <- c("Empirical CDF from simulation study", "Expected CDF from model (F(l))", "Empirical CDF from vcf file")
+legend_labels <- c("Empirical CDF from simulation study", "Expected CDF from model", "Empirical CDF from vcf file")
 legend_colors <- c("#000000", "#E41A1C", "#377EB8")
 
 # Create a data frame for the legend
@@ -156,16 +156,16 @@ legend_data <- data.frame(
   color = legend_colors
 )
 
-legend_data$label <- factor(legend_data$label, levels = c("Empirical CDF from simulation study", "Expected CDF from model (F(l))", "Empirical CDF from vcf file"))
+legend_data$label <- factor(legend_data$label, levels = c("Empirical CDF from simulation study", "Expected CDF from model", "Empirical CDF from vcf file"))
 legend_data$color <- factor(legend_data$color, levels = c("#000000", "#E41A1C", "#377EB8"))
 
 # Create a blank plot for the custom legend
 legend_plot <- ggplot(legend_data, aes(x = x, y = y)) +
   geom_point(aes(color = color), size = 5) + theme_bw() +
-  scale_color_manual(labels = c("Empirical CDF from simulation study", "Expected CDF from model (F(l))", "Empirical CDF from vcf file"), values = c("#000000", "#E41A1C", "#377EB8")) + 
+  scale_color_manual(labels = c("Empirical CDF from simulation study", "Expected CDF from model", "Empirical CDF from vcf file"), values = c("#000000", "#E41A1C", "#377EB8")) + 
   theme(legend.title = element_blank(), 
         legend.background = element_rect(color = "black", size = 0.5),  # Add a box around the legend
-        legend.key = element_rect(fill = "white", color = "black"))     # Add a border to legend keys)
+        legend.key = element_rect(fill = "white", color = "black"), text = element_text(size=20))     # Add a border to legend keys)
   
 legend <- get_legend(legend_plot)
 ```
