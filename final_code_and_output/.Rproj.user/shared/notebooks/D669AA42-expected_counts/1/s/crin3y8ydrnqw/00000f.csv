@@ -1,1 +1,0 @@
-"0","exp.freq.2M <- get_exp_freq_2M(1, 1/300, 1500) %>% as.data.frame()"
