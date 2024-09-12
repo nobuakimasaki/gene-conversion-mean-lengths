@@ -1,0 +1,28 @@
+{
+    "id": "9592F8DD",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1726111572121.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "id": "4d29b1a3f2764f0a88f06ec419549b52",
+        "name": "sim.tracts",
+        "title": "sim.tracts",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 0,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1726111572121,
+    "read_only": false,
+    "read_only_alternatives": []
+}

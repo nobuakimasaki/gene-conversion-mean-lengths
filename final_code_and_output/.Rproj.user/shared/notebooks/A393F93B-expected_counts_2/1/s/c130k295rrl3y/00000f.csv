@@ -1,0 +1,6 @@
+"0","### General outline for LD section"
+"0",""
+"0","#1. expected CDF not equal to empirical CDF in main simulation"
+"0","#2. empirical CDF in main simulation is equal to empirical CDF when simulating from the vcf file"
+"0","#3. expected CDF is equal to empirical CDF when simulating tracts without LD"
+"0","#4. truncated expected CDF is equal to truncated empirical CDF in main simulation"

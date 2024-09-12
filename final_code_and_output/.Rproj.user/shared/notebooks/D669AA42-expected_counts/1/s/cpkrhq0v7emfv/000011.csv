@@ -1,0 +1,2 @@
+"0","sim.exp.freq.1M <- lapply(psi, get_exp_freq_1M, 1/300, 1500)"
+"0","sim.tracts.exp.freq.1M <- lapply(sim.tracts.psi, get_exp_freq_1M, 1/300, 1500)"
