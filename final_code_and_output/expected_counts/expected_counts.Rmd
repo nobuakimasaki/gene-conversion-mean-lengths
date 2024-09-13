@@ -7,6 +7,7 @@ output: html_document
 
 ```{r, include=FALSE}
 library(dplyr)
+library(ggplot2)
 source('../main_sim/fns_sim.R')
 
 pL_geom_1M <- function(l, psi, phi, M) {
@@ -25,8 +26,12 @@ get_exp_freq_2M <- function(psi, phi, M) {
 }
 
 sim.0.5 <- readRDS("../main_sim/res.sim.2M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.keep.ends.rds")
-tracts <- lapply(sim.0.5, function(x) {return(x[[3]])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
-psi <- lapply(sim.0.5, function(x){return(x[[4]])}) %>% unlist() 
+sim.0.5.l <- lapply(sim.0.5, function(x) {return(x[[3]])}) %>% unlist()
+sim.0.5.psi <- lapply(sim.0.5, function(x){return(x[[4]])}) %>% unlist() 
+
+keep <- which(sim.0.5.l <= 1500)
+sim.0.5.l <- sim.0.5.l[keep]
+sim.0.5.psi <- sim.0.5.psi[keep]
 
 sim.tracts <- readRDS("../sim_tracts/res.geom.rds")
 sim.tracts.l <- lapply(sim.tracts, function(x) {return(x[[4]])}) %>% unlist()
@@ -46,18 +51,25 @@ sim.tracts.psi <- lapply(sim.tracts, function(x){return(x[[5]])}) %>% unlist()
 #1
 
 # expected CDF in main simulation
-sim.exp.freq.1M <- lapply(psi, get_exp_freq_1M, 1/300, 1500)
+sim.exp.freq.1M <- lapply(sim.0.5.psi, get_exp_freq_1M, 1/300, 1500)
 sim.exp.freq.1M.matrix <- sim.exp.freq.1M %>% unlist() %>% matrix(ncol = 1500, byrow = TRUE)
 sim.exp.freq.df <- colSums(sim.exp.freq.1M.matrix) %>% as.data.frame()
 sim.exp.freq.df$l <- 1:1500
 sim.exp.freq.df$freq <- sim.exp.freq.df$./sum(sim.exp.freq.df$.)
 
-sim.obs.cnts <- split(tracts, seq(nrow(tracts))) %>% lapply(function(x) {x[[2]] - x[[1]] + 1}) %>% as.data.frame() %>% t()
+sim.obs.cnts <- as.data.frame(sim.0.5.l)
 colnames(sim.obs.cnts) = "l"
 sim.obs.cnts <- as.data.frame(sim.obs.cnts)
 sim.obs.cnts.df <- sim.obs.cnts %>% group_by(l) %>% summarize(counts = n())
 sim.obs.freq.df <- sim.obs.cnts.df
 sim.obs.freq.df$freq <- sim.obs.freq.df$counts/sum(sim.obs.freq.df$counts)
+
+sim.exp.freq.df$cdf <- cumsum(sim.exp.freq.df$freq)
+sim.obs.freq.df$cdf <- cumsum(sim.obs.freq.df$freq)
+
+p1 <- ggplot(sim.obs.freq.df, aes(x = l, y = cdf)) + geom_line(size = 1, alpha = 0.5) + geom_line(data = sim.exp.freq.df, color = "#E41A1C", size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0.5)) + ylim(0, 1) + geom_text(aes(x = 50, y = 0.93), label = "F(l)", color = "#E41A1C", alpha = 0.5, size = 5) + geom_text(aes(x = 50, y = 0.77), label = expression(paste(widehat(F)^sim, (l))), color = "#000000", alpha = 0.5, size = 5) 
+
+p1
 ```
 
 ```{r}
