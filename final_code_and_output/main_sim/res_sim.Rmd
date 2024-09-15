@@ -1,0 +1,128 @@
+---
+title: "results_sim"
+author: "Nobuaki Masaki"
+date: "6/17/2024"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(purrr)
+library(dplyr)
+library(tidyr)
+
+res.sim <- readRDS("res.sim.2M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.keep.ends.rds")
+```
+
+```{r}
+### point estimates
+par.list <- lapply(res.sim, function(x) {x[[1]][[1]]}) %>% unlist()
+par.list2 <- lapply(res.sim, function(x) {x[[2]][[1]]}) %>% unlist()
+
+### point estimates are scaled differently for the two distributions
+est.geom <- 1/par.list
+est.geom2 <- 2/par.list2
+est.df <- c(est.geom, est.geom2) %>% as.data.frame()
+colnames(est.df) <- c("est.")
+
+### bootstrapped estimates
+boot.res.list <- lapply(res.sim, function(x) {x[[5]]}) 
+
+### get quantiles of raw estimates
+get_CI <- function(x) {x %>% unlist() %>% matrix(ncol = 2, byrow = TRUE) %>% apply(2, function(y) quantile(y, probs = c(0.025, 0.975))) %>% unlist()}
+CI.df <- lapply(boot.res.list, get_CI) %>% unlist() %>% matrix(ncol = 2, byrow = TRUE) %>% as.data.frame()
+colnames(CI.df) <- c("lower.95", "upper.95")
+CI.df.geom <- CI.df[seq(1,39,2),]
+CI.df.geom2 <- CI.df[seq(2,40,2),]
+new.CI.df <- rbind(CI.df.geom, CI.df.geom2)
+
+### combine point estimates and CI
+res.sim.CI <- cbind(est.df, new.CI.df)
+res.sim.CI$index <- rep(c(1:20), 2)
+res.sim.CI$model <- c(rep("geom", 20), rep("geom2", 20))
+```
+
+```{r}
+ggplot(res.sim.CI, aes(x = index, y = est., color = model)) + geom_point() + geom_errorbar(aes(ymin = lower.95, ymax = upper.95)) + geom_hline(yintercept = 300, linetype  = 2, alpha = 0.5) + ylim(0, 500) + theme_bw() + labs(x = "Replicate", y = "Estimate", title = "Estimated mean gene conversion length from simulation study", color = "Analysis") + scale_color_manual(values = c("geom" = "#E41A1C", geom2 = "#377EB8"))
+ggsave("est.sim.png", width = 7, height = 4)
+```
+
+```{r}
+### organize psi list
+# psi.list <- lapply(res.sim, function(x) {x[[3]]}) 
+# psi.sim <- psi.list[1:20] %>% unlist()
+# psi.sim2 <- psi.list[21:40] %>% unlist()
+# psi.sim.keep <- psi.list[41:60] %>% unlist()
+# psi.sim2.keep <- psi.list[61:80] %>% unlist()
+# psi.df <- cbind(psi.sim, psi.sim2, psi.sim.keep, psi.sim2.keep)
+```
+
+```{r}
+### mean estimate for all settings
+res.sim.CI %>% group_by(model) %>% summarize(mean_est = mean(est.))
+
+### filter geom and keep
+res.sim.CI.geom <- res.sim.CI %>% filter(model == "geom")
+
+### look at how many contained the true value
+which(res.sim.CI.geom$lower.95 <= 300 & res.sim.CI.geom$upper.95 >= 300)
+length(which(res.sim.CI.geom$lower.95 <= 300 & res.sim.CI.geom$upper.95 >= 300))
+
+which(res.sim.CI$lower.95 <= 300 & res.sim.CI$upper.95 >= 300)
+length(which(res.sim.CI$lower.95 <= 300 & res.sim.CI$upper.95 >= 300))
+```
+
+```{r}
+### list of negative log likelihoods
+lik.list.geom <- lapply(res.sim, function(x) {x[[1]][[2]]}) %>% unlist()
+lik.list.geom2 <- lapply(res.sim, function(x) {x[[2]][[2]]}) %>% unlist()
+
+AIC.geom <- 2 + 2*lik.list.geom
+AIC.geom2 <- 2 + 2*lik.list.geom2
+
+### calculate AIC
+res.sim.CI$AIC <- c(AIC.geom, AIC.geom2)
+
+AIC.geom - AIC.geom2
+quantile(AIC.geom - AIC.geom2)
+```
+
+```{r}
+### UK Biobank results (ends are kept, but ran using both distributions)
+res.UK <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
+
+### point estimate
+res.UK.phi <- 1/res.UK[[1]]$par
+
+### bootstrapped estimates
+boot.UK.res.list <- res.UK[[4]]
+boot.UK.phi.inv <- lapply(boot.UK.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
+boot.UK.phi <- 1/boot.UK.phi.inv
+
+res.UK.phi
+boot.UK.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
+```
+
+```{r}
+res.UK2 <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom2.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
+
+### point estimate
+res.UK2.phi <- 2/res.UK2[[1]]$par
+
+### bootstrapped estimates
+boot.UK2.res.list <- res.UK2[[4]]
+boot.UK2.phi.inv <- lapply(boot.UK2.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
+boot.UK2.phi <- 2/boot.UK2.phi.inv
+
+res.UK2.phi
+boot.UK2.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
+```
+
+```{r}
+res.UK.lik <- res.UK[[1]]$value
+res.UK2.lik <- res.UK2[[1]]$value
+
+2 + 2*res.UK.lik #AIC for geom
+2 + 2*res.UK2.lik #AIC for geom2
+```
+

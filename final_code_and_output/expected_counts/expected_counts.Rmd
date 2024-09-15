@@ -42,9 +42,14 @@ sim.tracts.psi <- lapply(sim.tracts, function(x){return(x[[5]])}) %>% unlist()
 ### General outline for LD section
 
 #1. expected CDF not equal to empirical CDF in main simulation
-#2. empirical CDF in main simulation is equal to empirical CDF when simulating from the vcf file
-#3. expected CDF is equal to empirical CDF when simulating tracts without LD
-#4. truncated expected CDF is equal to truncated empirical CDF in main simulation
+  # - LD is changing the density at L = 1
+#2  truncated expected CDF is equal to truncated empirical CDF in main simulation
+  # - LD does not affect the rest of the distribution as much
+#3. empirical CDF in main simulation is equal to empirical CDF when simulating from the vcf file
+  # - observed tracts are detected correctly
+#4. expected CDF is equal to empirical CDF when simulating tracts without LD
+  # - proof of LD
+
 ```
 
 ```{r}
