@@ -39,11 +39,11 @@ new.CI.df <- rbind(CI.df.geom, CI.df.geom2)
 ### combine point estimates and CI
 res.sim.CI <- cbind(est.df, new.CI.df)
 res.sim.CI$index <- rep(c(1:20), 2)
-res.sim.CI$model <- c(rep("geom", 20), rep("geom2", 20))
+res.sim.CI$model <- c(rep("Geometric", 20), rep("Sum of Geometric", 20))
 ```
 
 ```{r}
-ggplot(res.sim.CI, aes(x = index, y = est., color = model)) + geom_point() + geom_errorbar(aes(ymin = lower.95, ymax = upper.95)) + geom_hline(yintercept = 300, linetype  = 2, alpha = 0.5) + ylim(0, 500) + theme_bw() + labs(x = "Replicate", y = "Estimate", title = "Estimated mean gene conversion length from simulation study", color = "Analysis") + scale_color_manual(values = c("geom" = "#E41A1C", geom2 = "#377EB8"))
+ggplot(res.sim.CI, aes(x = index, y = est., color = model)) + geom_point() + geom_errorbar(aes(ymin = lower.95, ymax = upper.95)) + geom_hline(yintercept = 300, linetype  = 2, alpha = 0.5) + ylim(0, 500) + theme_bw() + labs(x = "Replicate", y = "Estimate", title = "Estimated mean gene conversion length from simulation study", color = "Analysis") + scale_color_manual(values = c("Geometric" = "#E41A1C", "Sum of Geometric" = "#377EB8"))
 ggsave("est.sim.png", width = 7, height = 4)
 ```
 
