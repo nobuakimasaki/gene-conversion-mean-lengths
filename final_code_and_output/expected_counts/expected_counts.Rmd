@@ -12,14 +12,9 @@ library(ggplot2)
 library(zoo)
 source('../main_sim/fns_sim.R')
 
-pL_geom_1M <- function(l, psi, phi, M) {
+pL_geom_1M <- function(psi, l, phi, M) {
   if (l == 1) {return(phi*psi/(phi*psi + psi^2*(1 - phi - (1 - phi)^M)))}
   else {return(phi*(1-phi)^(l-1)*psi^2/(phi*psi + psi^2*(1 - phi - (1 - phi)^M)))}
-}
-
-get_exp_freq_1M <- function(psi, phi, M) {
-  density <- lapply(1:1500, pL_geom_1M, psi, phi, M) %>% unlist()
-  return(density)
 }
 
 get_exp_freq_2M <- function(psi, phi, M) {
@@ -39,64 +34,83 @@ sim.0.5.psi <- sim.0.5.psi[keep]
 ```{r}
 ### General outline for LD section
 
-#1. expected CDF not equal to empirical CDF in main simulation
-  # - LD is changing the density at L = 1
+#1. prop. of singleton tracts not equal to estimated proportion in the main simulation
 #2  truncated expected CDF is equal to truncated empirical CDF in main simulation
-  # - LD does not affect the rest of the distribution as much
-#3. empirical CDF in main simulation is equal to empirical CDF when simulating from the vcf file
+#3. both prop. of singleton tracts and truncated CDFs are equal under no LD
+
+
+
+#?. empirical CDF in main simulation is equal to empirical CDF when simulating from the vcf file
   # - observed tracts are detected correctly
-#4. expected CDF is equal to empirical CDF when simulating tracts without LD
-  # - proof of LD
 ```
 
 ```{r}
 #1 and #2
 
-# expected CDF in main simulation
-sim.exp.freq.1M <- lapply(sim.0.5.psi, get_exp_freq_1M, 1/300, 1500)
-sim.exp.freq.1M.matrix <- sim.exp.freq.1M %>% unlist() %>% matrix(ncol = 1500, byrow = TRUE)
-sim.exp.freq.df <- colSums(sim.exp.freq.1M.matrix) %>% as.data.frame()
-sim.exp.freq.df$l <- 1:1500
-sim.exp.freq.df$freq <- sim.exp.freq.df$./sum(sim.exp.freq.df$.)
-
+# comparing freq. of singletons
+sim.est.freq.singletons.M <- lapply(sim.0.5.psi, pL_geom_1M, 1, 1/300, 1500) %>% unlist() %>% mean()
 sim.obs.cnts <- as.data.frame(sim.0.5.l)
-colnames(sim.obs.cnts) = "l"
-sim.obs.cnts <- as.data.frame(sim.obs.cnts)
-sim.obs.cnts.df <- sim.obs.cnts %>% group_by(l) %>% summarize(counts = n())
+colnames(sim.obs.cnts) = "l" 
+sim.freq.singletons.M <- sum(sim.obs.cnts$l == 1)/nrow(sim.obs.cnts)
+
+# comparing CDFs
+sim.obs.cnts.df <- sim.obs.cnts %>% filter(l != 1) %>% group_by(l) %>% summarize(counts = n())
 sim.obs.freq.df <- sim.obs.cnts.df
 sim.obs.freq.df$freq <- sim.obs.freq.df$counts/sum(sim.obs.freq.df$counts)
-
-sim.exp.freq.df$cdf.exp <- cumsum(sim.exp.freq.df$freq)
 sim.obs.freq.df$cdf.emp <- cumsum(sim.obs.freq.df$freq)
 
 exp.freq.2M.df <- get_exp_freq_2M(1, 1/300, 1500) %>% as.data.frame()
 exp.freq.2M.df$l <- 2:1500
-exp.freq.2M.df$cdf.exp.trunc <- cumsum(exp.freq.2M.df$.)
+exp.freq.2M.df$cdf.exp <- cumsum(exp.freq.2M.df$.)
 
-sim.obs.freq.df$freq.trunc <- sim.obs.freq.df$freq/(sum(sim.obs.freq.df$freq) - sim.obs.freq.df$freq[1])
-sim.obs.freq.df$freq.trunc <- c(0, sim.obs.freq.df$freq.trunc[-1]) 
-sim.obs.freq.df$cdf.emp.trunc <- cumsum(sim.obs.freq.df$freq.trunc)
+sim.freq.df <- left_join(exp.freq.2M.df, sim.obs.freq.df, by = "l") %>% select(l, cdf.exp, cdf.emp) %>% gather(2:3, key = "exp/emp", value = "cdf")
 
-sim.freq.df <- left_join(sim.exp.freq.df, sim.obs.freq.df, by = "l") %>% left_join(exp.freq.2M.df, by = "l") %>% select(l, cdf.exp, cdf.emp, cdf.exp.trunc, cdf.emp.trunc) %>% gather(2:5, key = "analysis", value = "cdf")
-
-sim.freq.df$analysis <- forcats::fct_relevel(sim.freq.df$analysis, "cdf.exp", "cdf.emp", "cdf.exp.trunc", "cdf.emp.trunc")
-
+sim.freq.df$`exp/emp` <- forcats::fct_relevel(sim.freq.df$`exp/emp`, "cdf.exp", "cdf.emp")
 sim.freq.df$cdf <- na.locf(sim.freq.df$cdf)
 
-p1 <- ggplot(sim.freq.df %>% filter(analysis %in% c("cdf.exp", "cdf.emp")), aes(x = l, y = cdf, color = analysis)) + geom_line(size = 1, alpha = 0.5) + theme_bw() + labs(title = "A", y = "Cumulative density", x = expression(italic(l)), color = "") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0)) + ylim(0, 1.01) + 
+p1 <- ggplot(sim.freq.df %>% filter(`exp/emp` %in% c("cdf.exp", "cdf.emp")), aes(x = l, y = cdf, color = `exp/emp`)) + geom_line(size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density", x = expression("\u2113"), color = "") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0)) + ylim(0, 1.01) + 
   scale_color_manual(
   values = c("cdf.exp" = "#000000", "cdf.emp" = "#E41A1C"), 
-  labels = c(expression(F[1]^1500~(l)), expression(paste(widehat(F)^{multiIBD}, (l))))) +
-  scale_x_continuous(breaks = c(1, 500, 1000, 1500))
+  labels = c(expression(F[2]^{1500} * "(" * "\u2113" ~ "|" ~ phi == 300 * ")"), expression(paste(widehat(F)^{coalescent}, ("\u2113"))))) +
+  scale_x_continuous(breaks = c(2, 500, 1000, 1500))
 
 p1
 
 ggsave("cdf.p1.png", width = 12, height = 6)
+```
 
-p2 <- ggplot(sim.freq.df %>% filter(analysis %in% c("cdf.exp.trunc", "cdf.emp.trunc") & l > 1), aes(x = l, y = cdf, color = analysis)) + geom_line(size = 1, alpha = 0.5) + theme_bw() + labs(title = "B", y = "Cumulative density", x = expression(italic(l)), color = "") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0)) + ylim(-0.01, 1.01) + xlim(2, 1500) + 
+```{r}
+#3
+
+sim.tracts <- readRDS("../sim_tracts/res.geom.rds")
+sim.tracts.l <- sim.tracts[[1]][[4]]
+sim.tracts.psi <- sim.tracts[[1]][[5]]
+
+keep <- which(sim.tracts.l <= 1500)
+sim.tracts.l <- sim.tracts.l[keep]
+sim.tracts.psi <- sim.tracts.psi[keep]
+
+# comparing freq. of singletons
+sim.tracts.est.freq.singletons.M <- lapply(sim.tracts.psi, pL_geom_1M, 1, 1/300, 1500) %>% unlist() %>% mean()
+sim.tracts.obs.cnts <- as.data.frame(sim.tracts.l)
+colnames(sim.tracts.obs.cnts) = "l" 
+sim.tracts.freq.singletons.M <- sum(sim.tracts.obs.cnts$l == 1)/nrow(sim.tracts.obs.cnts)
+
+# comparing CDFs
+sim.tracts.obs.cnts.df <- sim.tracts.obs.cnts %>% filter(l != 1) %>% group_by(l) %>% summarize(counts = n())
+sim.tracts.obs.freq.df <- sim.tracts.obs.cnts.df
+sim.tracts.obs.freq.df$freq <- sim.tracts.obs.freq.df$counts/sum(sim.tracts.obs.freq.df$counts)
+sim.tracts.obs.freq.df$cdf.emp <- cumsum(sim.tracts.obs.freq.df$freq)
+
+sim.tracts.freq.df <- left_join(exp.freq.2M.df, sim.tracts.obs.freq.df, by = "l") %>% select(l, cdf.exp, cdf.emp) %>% gather(2:3, key = "exp/emp", value = "cdf")
+
+sim.tracts.freq.df$`exp/emp` <- forcats::fct_relevel(sim.tracts.freq.df$`exp/emp`, "cdf.exp", "cdf.emp")
+sim.tracts.freq.df$cdf <- na.locf(sim.tracts.freq.df$cdf)
+
+p2 <- ggplot(sim.tracts.freq.df %>% filter(`exp/emp` %in% c("cdf.exp", "cdf.emp")), aes(x = l, y = cdf, color = `exp/emp`)) + geom_line(size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density", x = expression("\u2113"), color = "") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0)) + ylim(0, 1.01) + 
   scale_color_manual(
-  values = c("cdf.exp.trunc" = "#000000", "cdf.emp.trunc" = "#E41A1C"), 
-  labels = c(expression(F[2]^1500~(l)), expression(paste(widehat(F)^{multiIBD}, (l))))) +
+  values = c("cdf.exp" = "#000000", "cdf.emp" = "#E41A1C"), 
+  labels = c(expression(F[2]^{1500} * "(" * "\u2113" ~ "|" ~ phi == 300 * ")"), expression(paste(widehat(F)^{robust}, ("\u2113"))))) +
   scale_x_continuous(breaks = c(2, 500, 1000, 1500))
 
 p2
@@ -104,8 +118,13 @@ p2
 ggsave("cdf.p2.png", width = 12, height = 6)
 ```
 
+
+
+
+
+
 ```{r}
-#3
+#?????
 
 sim.vcf <- read.csv("../sim_vcf/sim_tracts_vcf_5000000.csv")
 sim.vcf <- sim.vcf %>% filter(X0 <= 1500)
@@ -133,57 +152,5 @@ p3
 
 ggsave("cdf.p3.png", width = 9, height = 6)
 ```
-
-```{r}
-#4
-
-sim.tracts <- readRDS("../sim_tracts/res.geom.rds")
-sim.tracts.l <- sim.tracts[[1]][[4]]
-sim.tracts.psi <- sim.tracts[[1]][[5]]
-
-keep <- which(sim.tracts.l <= 1500)
-sim.tracts.l <- sim.tracts.l[keep]
-sim.tracts.psi <- sim.tracts.psi[keep]
-
-# expected CDF
-sim.exp.freq.1M <- lapply(sim.tracts.psi, get_exp_freq_1M, 1/300, 1500)
-sim.exp.freq.1M.matrix <- sim.exp.freq.1M %>% unlist() %>% matrix(ncol = 1500, byrow = TRUE)
-sim.exp.freq.df <- colSums(sim.exp.freq.1M.matrix) %>% as.data.frame()
-sim.exp.freq.df$l <- 1:1500
-sim.exp.freq.df$freq <- sim.exp.freq.df$./sum(sim.exp.freq.df$.)
-
-sim.obs.cnts <- as.data.frame(sim.tracts.l)
-colnames(sim.obs.cnts) = "l"
-sim.obs.cnts <- as.data.frame(sim.obs.cnts)
-sim.obs.cnts.df <- sim.obs.cnts %>% group_by(l) %>% summarize(counts = n())
-sim.obs.freq.df <- sim.obs.cnts.df
-sim.obs.freq.df$freq <- sim.obs.freq.df$counts/sum(sim.obs.freq.df$counts)
-
-sim.exp.freq.df$cdf.exp <- cumsum(sim.exp.freq.df$freq)
-sim.obs.freq.df$cdf.emp <- cumsum(sim.obs.freq.df$freq)
-
-sim.freq.df <- left_join(sim.exp.freq.df, sim.obs.freq.df, by = "l") %>% select(l, cdf.exp, cdf.emp) %>% gather(2:3, key = "analysis", value = "cdf")
-
-sim.freq.df$analysis <- forcats::fct_relevel(sim.freq.df$analysis, "cdf.exp", "cdf.emp")
-
-sim.freq.df$cdf <- na.locf(sim.freq.df$cdf)
-
-p4 <- ggplot(sim.freq.df %>% filter(analysis %in% c("cdf.exp", "cdf.emp")), aes(x = l, y = cdf, color = analysis)) + geom_line(size = 1, alpha = 0.5) + theme_bw() + labs(y = "Cumulative density", x = expression(italic(l)), color = "") + theme(text = element_text(size=22), plot.title = element_text(hjust = 0.5)) + ylim(0, 1.01) + 
-  scale_color_manual(
-  values = c("cdf.exp" = "#000000", "cdf.emp" = "#E41A1C"), 
-  labels = c(expression(F[1]^1500~(l)), expression(paste(widehat(F)^{noLD}, (l))))) +
-  scale_x_continuous(breaks = c(1, 500, 1000, 1500))
-
-p4
-
-ggsave("cdf.p4.png", width = 9, height = 6)
-```
-
-
-
-
-
-
-
 
 
