@@ -1,0 +1,89 @@
+---
+title: "detection"
+output: html_document
+date: "2024-10-30"
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+
+recomb_rates <- readRDS("res_recombination_rates.rds")
+recomb_rates.chr1 <- recomb_rates[[1]][[1]]
+
+read_map_file <- function(chr) {
+  str = paste0("decode2019.chrchr", chr,
+               ".GRCh38.map")
+  df <- read.table(str)
+  return(df)
+}
+
+mean1 <- recomb_rates[[1]][[2]]
+```
+
+```{r}
+ggplot(recomb_rates.chr1, aes(center, V1)) + geom_point(size = 0.3) + labs(x = "Position", y = "log10 recomb. rate (cM/Mb)") + theme_bw() + geom_hline(yintercept = 5*mean1, color = "red")
+
+ggplot(recomb_rates.chr1, aes(center, log10(V1))) + geom_point(size = 0.3) + labs(x = "Position", y = "log10 recomb. rate (cM/Mb)") + theme_bw() + geom_hline(yintercept = log10(5*mean1), color = "red")
+ggsave("p1.png")
+
+sum(recomb_rates.chr1$V1 > 5*mean1)
+```
+
+```{r}
+recomb_rates.chr1$hotspot <- recomb_rates.chr1$V1 > 5*mean1
+
+# Add a grouping column to identify consecutive TRUE/FALSE sequences
+recomb_rates.chr1 <- recomb_rates.chr1 %>%
+  mutate(group_id = cumsum(hotspot != lag(hotspot, default = first(hotspot))))
+
+
+recomb.hotspots.chr1 <- recomb_rates.chr1 %>%
+  group_by(group_id) %>%
+  summarize(
+    first_marker = min(V2),
+    last_marker = max(V3),
+    first_pos = min(V4),
+    last_pos = max(V5),
+    hotspot = first(hotspot)
+  ) %>%
+  select(-group_id)  # Remove the temporary grouping column
+
+recomb.hotspots.chr1$length <- recomb.hotspots.chr1$last_pos - recomb.hotspots.chr1$first_pos + 1
+
+recomb.hotspots.chr1.only.hotspots <- recomb.hotspots.chr1 %>% filter(hotspot == TRUE) 
+max(recomb.hotspots.chr1.only.hotspots$length)
+```
+
+```{r}
+recomb_rates <- readRDS("res_recombination_rates.rds")
+
+get_hotspots <- function(chr) {
+  recomb_rates.chr <- recomb_rates[[chr]][[1]]
+  background.rate <- recomb_rates[[chr]][[2]]
+  
+  recomb_rates.chr$hotspot <- recomb_rates.chr$V1 > 5*background.rate
+
+  # Add a grouping column to identify consecutive TRUE/FALSE sequences
+  recomb_rates.chr <- recomb_rates.chr %>%
+    mutate(group_id = cumsum(hotspot != lag(hotspot, default = first(hotspot))))
+  
+  recomb.hotspots.chr <- recomb_rates.chr %>%
+  group_by(group_id) %>%
+    summarize(
+    first_marker = min(V2),
+    last_marker = max(V3),
+    first_pos = min(V4),
+    last_pos = max(V5),
+    hotspot = first(hotspot)) %>%
+    select(-group_id) 
+  
+  recomb.hotspots.chr$length <- recomb.hotspots.chr$last_pos - recomb.hotspots.chr$first_pos + 1
+  
+  return(recomb.hotspots.chr)
+}
+
+hotspots.chrs <- lapply(1:22, get_hotspots)
+saveRDS(hotspots.chrs, "hotspots.RDS")
+```
+

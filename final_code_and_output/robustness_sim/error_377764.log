@@ -1,0 +1,10 @@
+
+Attaching package: ‘purrr’
+
+The following object is masked from ‘package:data.table’:
+
+    transpose
+
+Error in FUN(X[[i]], ...) : object 'num_cores' not found
+Calls: lapply -> FUN -> mclapply
+Execution halted
