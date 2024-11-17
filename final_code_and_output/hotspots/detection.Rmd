@@ -9,54 +9,6 @@ library(ggplot2)
 library(dplyr)
 
 recomb_rates <- readRDS("res_recombination_rates.rds")
-recomb_rates.chr1 <- recomb_rates[[1]][[1]]
-
-read_map_file <- function(chr) {
-  str = paste0("decode2019.chrchr", chr,
-               ".GRCh38.map")
-  df <- read.table(str)
-  return(df)
-}
-
-mean1 <- recomb_rates[[1]][[2]]
-```
-
-```{r}
-ggplot(recomb_rates.chr1, aes(center, V1)) + geom_point(size = 0.3) + labs(x = "Position", y = "log10 recomb. rate (cM/Mb)") + theme_bw() + geom_hline(yintercept = 5*mean1, color = "red")
-
-ggplot(recomb_rates.chr1, aes(center, log10(V1))) + geom_point(size = 0.3) + labs(x = "Position", y = "log10 recomb. rate (cM/Mb)") + theme_bw() + geom_hline(yintercept = log10(5*mean1), color = "red")
-ggsave("p1.png")
-
-sum(recomb_rates.chr1$V1 > 5*mean1)
-```
-
-```{r}
-recomb_rates.chr1$hotspot <- recomb_rates.chr1$V1 > 5*mean1
-
-# Add a grouping column to identify consecutive TRUE/FALSE sequences
-recomb_rates.chr1 <- recomb_rates.chr1 %>%
-  mutate(group_id = cumsum(hotspot != lag(hotspot, default = first(hotspot))))
-
-
-recomb.hotspots.chr1 <- recomb_rates.chr1 %>%
-  group_by(group_id) %>%
-  summarize(
-    first_marker = min(V2),
-    last_marker = max(V3),
-    first_pos = min(V4),
-    last_pos = max(V5),
-    hotspot = first(hotspot)
-  ) %>%
-  select(-group_id)  # Remove the temporary grouping column
-
-recomb.hotspots.chr1$length <- recomb.hotspots.chr1$last_pos - recomb.hotspots.chr1$first_pos + 1
-
-recomb.hotspots.chr1.only.hotspots <- recomb.hotspots.chr1 %>% filter(hotspot == TRUE) 
-max(recomb.hotspots.chr1.only.hotspots$length)
-```
-
-```{r}
-recomb_rates <- readRDS("res_recombination_rates.rds")
 
 get_hotspots <- function(chr) {
   recomb_rates.chr <- recomb_rates[[chr]][[1]]
@@ -79,11 +31,63 @@ get_hotspots <- function(chr) {
     select(-group_id) 
   
   recomb.hotspots.chr$length <- recomb.hotspots.chr$last_pos - recomb.hotspots.chr$first_pos + 1
+  recomb.hotspots.chr$chr <- chr
   
   return(recomb.hotspots.chr)
 }
 
 hotspots.chrs <- lapply(1:22, get_hotspots)
 saveRDS(hotspots.chrs, "hotspots.RDS")
+
+hotspots.chrs.combined <- do.call(rbind, hotspots.chrs)
+```
+
+```{r}
+hotspots.chrs.combined.only.hotspots <- hotspots.chrs.combined %>% filter(hotspot == TRUE)
+hotspots.chrs.combined.only.hotspots %>% filter(length == max(length))
+
+hotspots.chr21 <- hotspots.chrs.combined %>% filter(chr == 21)
+hotspots.chr21
+# Example plotting code
+
+recomb.rates.chr21 <- recomb_rates[[21]][[1]]
+background.chr21 <- recomb_rates[[21]][[2]]
+recomb.rates.chr21$hotspot <- recomb.rates.chr21$V1 > 5*background.chr21
+
+ggplot(hotspots.chr21 %>% filter(hotspot == TRUE)) +
+  geom_rect(aes(xmin = first_pos/10^6, xmax = last_pos/10^6, ymin = log(5*background.chr21)-0.5, ymax = log(5*background.chr21)+0.5), fill = "red", color = "red") +
+  geom_point(data = recomb.rates.chr21, aes(x = center/10^6, y = log(V1)), size = 0.3, alpha = 0.4) +
+  labs(x = "Position (Mb)", y = "Logged recombination rate (cM/Mb)", title = "Recombination hotspots on chromosome 21") +
+  geom_hline(yintercept = log(5*background.chr21)) +
+  theme_bw() 
+
+ggsave("Fig2.png", width = 7, height = 4)
+```
+
+
+```{r}
+res.hotspot <- readRDS("res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.hotspot.rds")
+res.not.hotspot <- readRDS("res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.not.hotspot.rds")
+res <- readRDS("res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
+
+1/res.hotspot[[1]][[1]]
+2/res.hotspot[[2]][[1]]
+
+1/res.not.hotspot[[1]][[1]]
+2/res.not.hotspot[[2]][[1]]
+```
+
+```{r}
+quantile(lapply(res.hotspot[[5]], function(x) {x[[1]]}) %>% unlist(), probs = c(0.025, 0.975))
+quantile(lapply(res.hotspot[[5]], function(x) {x[[2]]}) %>% unlist(), probs = c(0.025, 0.975))
+
+quantile(lapply(res.not.hotspot[[5]], function(x) {x[[1]]}) %>% unlist(), probs = c(0.025, 0.975))
+quantile(lapply(res.not.hotspot[[5]], function(x) {x[[2]]}) %>% unlist(), probs = c(0.025, 0.975))
+
+2 + 2*res.hotspot[[1]][[2]]
+2 + 2*res.hotspot[[2]][[2]]
+
+2 + 2*res.not.hotspot[[1]][[2]]
+2 + 2*res.not.hotspot[[2]][[2]]
 ```
 
