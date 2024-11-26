@@ -78,7 +78,7 @@ MAF.chrom.1 <- read.MAF(1)
 
 tracts_unif <- read.csv("sim_tracts_vcf_unif_multiple_iterations.csv")
 colnames(tracts_unif) <- c("V1", "V2", "length", "iter")
-tracts_unif <- dplyr::filter(tracts_unif, iter <= 19)
+#tracts_unif <- dplyr::filter(tracts_unif, iter <= 19)
 tracts_unif <- dplyr::select(tracts_unif, -length)
 tracts_unif_df_list <- split(tracts_unif, tracts_unif$iter)
 res_unif <- lapply(tracts_unif_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)

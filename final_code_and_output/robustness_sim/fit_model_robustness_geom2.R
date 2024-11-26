@@ -78,7 +78,7 @@ MAF.chrom.1 <- read.MAF(1)
 
 tracts_geom2 <- read.csv("sim_tracts_vcf_geom2_multiple_iterations.csv")
 colnames(tracts_geom2) <- c("V1", "V2", "length", "iter")
-tracts_geom2 <- dplyr::filter(tracts_geom2, iter <= 19)
+#tracts_geom2 <- dplyr::filter(tracts_geom2, iter <= 19)
 tracts_geom2 <- dplyr::select(tracts_geom2, -length)
 tracts_geom2_df_list <- split(tracts_geom2, tracts_geom2$iter)
 res_geom2 <- lapply(tracts_geom2_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)

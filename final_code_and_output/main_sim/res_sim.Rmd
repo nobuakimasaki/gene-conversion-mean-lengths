@@ -44,7 +44,7 @@ res.sim.CI$model <- c(rep("Geometric", 20), rep("Sum of Geometric", 20))
 
 ```{r}
 ggplot(res.sim.CI, aes(x = index, y = est., color = model)) + geom_point() + geom_errorbar(aes(ymin = lower.95, ymax = upper.95)) + geom_hline(yintercept = 300, linetype  = 2, alpha = 0.5) + ylim(0, 500) + theme_bw() + labs(x = "Replicate", y = "Estimate", title = "Estimated mean gene conversion length from simulation study", color = "Analysis") + scale_color_manual(values = c("Geometric" = "#E41A1C", "Sum of Geometric" = "#377EB8"))
-ggsave("est.sim.png", width = 7, height = 4)
+ggsave("figs/est.sim.png", width = 7, height = 4)
 ```
 
 ```{r}
@@ -62,7 +62,7 @@ ggsave("est.sim.png", width = 7, height = 4)
 res.sim.CI %>% group_by(model) %>% summarize(mean_est = mean(est.))
 
 ### filter geom and keep
-res.sim.CI.geom <- res.sim.CI %>% filter(model == "geom")
+res.sim.CI.geom <- res.sim.CI %>% filter(model == "Geometric")
 
 ### look at how many contained the true value
 which(res.sim.CI.geom$lower.95 <= 300 & res.sim.CI.geom$upper.95 >= 300)
@@ -88,41 +88,41 @@ quantile(AIC.geom - AIC.geom2)
 ```
 
 ```{r}
-### UK Biobank results (ends are kept, but ran using both distributions)
-res.UK <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
-
-### point estimate
-res.UK.phi <- 1/res.UK[[1]]$par
-
-### bootstrapped estimates
-boot.UK.res.list <- res.UK[[4]]
-boot.UK.phi.inv <- lapply(boot.UK.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
-boot.UK.phi <- 1/boot.UK.phi.inv
-
-res.UK.phi
-boot.UK.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
+# ### UK Biobank results (ends are kept, but ran using both distributions)
+# res.UK <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
+# 
+# ### point estimate
+# res.UK.phi <- 1/res.UK[[1]]$par
+# 
+# ### bootstrapped estimates
+# boot.UK.res.list <- res.UK[[4]]
+# boot.UK.phi.inv <- lapply(boot.UK.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
+# boot.UK.phi <- 1/boot.UK.phi.inv
+# 
+# res.UK.phi
+# boot.UK.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
 ```
 
 ```{r}
-res.UK2 <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom2.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
-
-### point estimate
-res.UK2.phi <- 2/res.UK2[[1]]$par
-
-### bootstrapped estimates
-boot.UK2.res.list <- res.UK2[[4]]
-boot.UK2.phi.inv <- lapply(boot.UK2.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
-boot.UK2.phi <- 2/boot.UK2.phi.inv
-
-res.UK2.phi
-boot.UK2.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
+# res.UK2 <- readRDS("res.UK_Biobank.1M.1500.region.5000.geom2.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
+# 
+# ### point estimate
+# res.UK2.phi <- 2/res.UK2[[1]]$par
+# 
+# ### bootstrapped estimates
+# boot.UK2.res.list <- res.UK2[[4]]
+# boot.UK2.phi.inv <- lapply(boot.UK2.res.list, function(x) {x[[1]][[1]]}) %>% unlist()
+# boot.UK2.phi <- 2/boot.UK2.phi.inv
+# 
+# res.UK2.phi
+# boot.UK2.phi %>% unlist() %>% quantile(probs = c(0.025, 0.975))
 ```
 
 ```{r}
-res.UK.lik <- res.UK[[1]]$value
-res.UK2.lik <- res.UK2[[1]]$value
-
-2 + 2*res.UK.lik #AIC for geom
-2 + 2*res.UK2.lik #AIC for geom2
+# res.UK.lik <- res.UK[[1]]$value
+# res.UK2.lik <- res.UK2[[1]]$value
+# 
+# 2 + 2*res.UK.lik #AIC for geom
+# 2 + 2*res.UK2.lik #AIC for geom2
 ```
 
