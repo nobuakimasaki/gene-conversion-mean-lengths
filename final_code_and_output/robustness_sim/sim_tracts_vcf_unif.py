@@ -22,7 +22,8 @@ def sim_tracts(N_gene_conv, min_pos, max_pos, dist_N, mean = 300):
     elif dist_N == "geom2":
         lengths = np.random.geometric(2/mean, N_gene_conv) + np.random.geometric(2/mean, N_gene_conv)
     elif dist_N == "unif":
-        lengths = np.random.uniform(low = 1, high = mean*2-1, size = N_gene_conv)
+        #lengths = np.random.uniform(low = 1, high = mean*2-1, size = N_gene_conv)
+        lengths = np.random.randint(low = 1, high = mean*2, size = N_gene_conv)
     elif dist_N == "geom3":
         lengths = np.random.geometric(3/mean, N_gene_conv) + np.random.geometric(3/mean, N_gene_conv) + np.random.geometric(3/mean, N_gene_conv) 
     else:

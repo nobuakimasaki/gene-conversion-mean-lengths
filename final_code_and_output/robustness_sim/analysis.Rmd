@@ -8,70 +8,92 @@ date: "2024-10-13"
 library(dplyr)
 geom.res <- readRDS("res.sim.2M.1500.region.5000.geom.MAF.0.5.boot.keep.ends.rds")
 geom2.res <- readRDS("res.sim.2M.1500.region.5000.geom2.MAF.0.5.boot.keep.ends.rds") 
-unif.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.rds") 
-negbinom.res <- readRDS("res.sim.2M.1500.region.5000.negbinom.MAF.0.5.boot.keep.ends.rds") 
+geom3.res <- readRDS("res.sim.2M.1500.region.5000.geom3.MAF.0.5.boot.keep.ends.rds") 
+
+unif.1.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
+unif.2.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
+unif.res <- c(unif.1.res, unif.2.res)
 ```
 
 ```{r}
 geom.pnt.geom <- lapply(geom.res, function(x) {x[[1]][[1]]}) %>% unlist()
 geom2.pnt.geom <- lapply(geom2.res, function(x) {x[[1]][[1]]}) %>% unlist()
+geom3.pnt.geom <- lapply(geom3.res, function(x) {x[[1]][[1]]}) %>% unlist()
 unif.pnt.geom <- lapply(unif.res, function(x) {x[[1]][[1]]}) %>% unlist()
-negbinom.pnt.geom <- lapply(negbinom.res, function(x) {x[[1]][[1]]}) %>% unlist()
 
 geom.pnt.geom2 <- lapply(geom.res, function(x) {x[[2]][[1]]}) %>% unlist()
 geom2.pnt.geom2 <- lapply(geom2.res, function(x) {x[[2]][[1]]}) %>% unlist()
+geom3.pnt.geom2 <- lapply(geom3.res, function(x) {x[[2]][[1]]}) %>% unlist()
 unif.pnt.geom2 <- lapply(unif.res, function(x) {x[[2]][[1]]}) %>% unlist()
-negbinom.pnt.geom2 <- lapply(negbinom.res, function(x) {x[[2]][[1]]}) %>% unlist()
 ```
 
 ```{r}
+### geometric model
 mean(1/geom.pnt.geom) - 300
 mean(1/geom2.pnt.geom) - 300
+mean(1/geom3.pnt.geom) - 300
 mean(1/unif.pnt.geom) - 300
-mean(1/negbinom.pnt.geom) - 300
 
+### geometric 2 model
 mean(2/geom.pnt.geom2) - 300
 mean(2/geom2.pnt.geom2) - 300
+mean(2/geom3.pnt.geom2) - 300
 mean(2/unif.pnt.geom2) - 300
-mean(2/negbinom.pnt.geom2) - 300
+
+### geometric model
+sd(1/geom.pnt.geom) 
+sd(1/geom2.pnt.geom) 
+sd(1/geom3.pnt.geom) 
+sd(1/unif.pnt.geom) 
+
+### geometric 2 model
+sd(2/geom.pnt.geom2) 
+sd(2/geom2.pnt.geom2) 
+sd(2/geom3.pnt.geom2) 
+sd(2/unif.pnt.geom2) 
 ```
 
 ```{r}
 geom.lik.geom <- lapply(geom.res, function(x) {x[[1]][[2]]}) %>% unlist()
 geom2.lik.geom <- lapply(geom2.res, function(x) {x[[1]][[2]]}) %>% unlist()
+geom3.lik.geom <- lapply(geom3.res, function(x) {x[[1]][[2]]}) %>% unlist()
 unif.lik.geom <- lapply(unif.res, function(x) {x[[1]][[2]]}) %>% unlist()
-negbinom.lik.geom <- lapply(negbinom.res, function(x) {x[[1]][[2]]}) %>% unlist()
 
 geom.lik.geom2 <- lapply(geom.res, function(x) {x[[2]][[2]]}) %>% unlist()
 geom2.lik.geom2 <- lapply(geom2.res, function(x) {x[[2]][[2]]}) %>% unlist()
+geom3.lik.geom2 <- lapply(geom3.res, function(x) {x[[2]][[2]]}) %>% unlist()
 unif.lik.geom2 <- lapply(unif.res, function(x) {x[[2]][[2]]}) %>% unlist()
-negbinom.lik.geom2 <- lapply(negbinom.res, function(x) {x[[2]][[2]]}) %>% unlist()
 
 geom.pnt.AIC <- ifelse(geom.lik.geom < geom.lik.geom2, 1/geom.pnt.geom, 2/geom.pnt.geom2)
 geom2.pnt.AIC <- ifelse(geom2.lik.geom < geom2.lik.geom2, 1/geom2.pnt.geom, 2/geom2.pnt.geom2)
+geom3.pnt.AIC <- ifelse(geom3.lik.geom < geom3.lik.geom2, 1/geom3.pnt.geom, 2/geom3.pnt.geom2)
 unif.pnt.AIC <- ifelse(unif.lik.geom < unif.lik.geom2, 1/unif.pnt.geom, 2/unif.pnt.geom2)
-negbinom.pnt.AIC <- ifelse(negbinom.lik.geom < negbinom.lik.geom2, 1/negbinom.pnt.geom, 2/negbinom.pnt.geom2)
 ```
 
 ```{r}
 mean(geom.pnt.AIC) - 300
 mean(geom2.pnt.AIC) - 300
+mean(geom3.pnt.AIC) - 300
 mean(unif.pnt.AIC) - 300
-mean(negbinom.pnt.AIC) - 300
+
+sd(geom.pnt.AIC) 
+sd(geom2.pnt.AIC)
+sd(geom3.pnt.AIC) 
+sd(unif.pnt.AIC) 
 ```
 
 ```{r}
 geom.boot <- lapply(geom.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
 geom2.boot <- lapply(geom2.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
+geom3.boot <- lapply(geom3.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
 unif.boot <- lapply(unif.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
-negbinom.boot <- lapply(negbinom.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
 ```
 
 ```{r}
 geom.coverage <- lapply(geom.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
 geom2.coverage <- lapply(geom2.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
+geom3.coverage <- lapply(geom3.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
 unif.coverage <- lapply(unif.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
-negbinom.coverage <- lapply(negbinom.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
 ```
 
 ```{r}
@@ -81,8 +103,11 @@ apply(geom.coverage, 2, sum)
 apply(geom2.coverage, 2, mean)
 apply(geom2.coverage, 2, sum)
 
-unif.coverage
-negbinom.coverage
+apply(geom3.coverage, 2, mean)
+apply(geom3.coverage, 2, sum)
+
+apply(unif.coverage, 2, mean)
+apply(unif.coverage, 2, sum)
 ```
 
 ```{r}
