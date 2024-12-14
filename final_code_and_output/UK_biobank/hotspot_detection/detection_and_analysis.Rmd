@@ -63,19 +63,24 @@ hotspots.chrs.combined.only.hotspots <- hotspots.chrs.combined %>% filter(hotspo
 hotspots.chrs.combined.only.hotspots %>% filter(length == max(length))
 
 hotspots.chr21 <- hotspots.chrs.combined %>% filter(chr == 21)
-hotspots.chr21
+hotspots.chr21$hotspot.int <- ifelse(hotspots.chr21$hotspot, "0", "1")
 
 recomb.rates.chr21 <- recomb_rates[[21]][[1]]
 background.chr21 <- recomb_rates[[21]][[2]]
-recomb.rates.chr21$hotspot <- recomb.rates.chr21$V1 > 5*background.chr21
 
-ggplot(hotspots.chr21 %>% filter(hotspot == TRUE)) +
-  geom_rect(aes(xmin = first_pos/10^6, xmax = last_pos/10^6, ymin = log(5*background.chr21)-0.5, ymax = log(5*background.chr21)+0.5), fill = "#E41A1C", color = "#E41A1C", size = 0.1) +
-  geom_point(data = recomb.rates.chr21, aes(x = center/10^6, y = log(V1)), size = 0.3, alpha = 0.4) +
-  labs(x = "Position (Mb)", y = "Logged recombination rate (cM/Mb)", title = "Recombination hotspots on chromosome 21") +
-  geom_hline(yintercept = log(5*background.chr21)) +
-  theme_bw()
+hotspots.chr21.filt <- hotspots.chr21 %>% filter(last_pos/10^6 < 14.5 & first_pos/10^6 > 14.4)
+recomb.rates.chr21.filt <- recomb.rates.chr21 %>% filter(V5/10^6 < 14.5 & V4/10^6 > 14.4)
 
+ggplot(hotspots.chr21.filt) +
+  geom_rect(aes(xmin = first_pos/10^6, xmax = last_pos/10^6, ymin = 5*background.chr21 - 1, ymax = 5*background.chr21 + 1, fill = hotspot.int), alpha = 0.5) +
+  geom_point(data = recomb.rates.chr21.filt, aes(x = center/10^6, y = V1), size = 0.3) +
+  labs(x = "Position (Mb)", y = "Recombination rate (cM/Mb)") +
+  geom_hline(yintercept = 5*background.chr21) +
+  scale_fill_manual(values = c("0" = "#E41A1C", "1" = "transparent"),
+                    labels = c("0" = "Hotspot", "1" = ""),
+                    name = "") +
+  xlim(14.4, 14.5) +
+  theme_bw() 
 ggsave("../figs/Fig2.png", width = 7, height = 4)
 ```
 

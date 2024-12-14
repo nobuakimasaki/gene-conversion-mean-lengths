@@ -154,11 +154,10 @@ ggplot(data) +
   geom_line(aes(x = x, y = pmf_geom2, color = "Sum of two geometric"), size = 1) +
   geom_line(aes(x = x, y = pmf_geom3, color = "Sum of three geometric"), size = 1) +
   geom_line(aes(x = x, y = pmf_uniform, color = "Uniform"), size = 1) +
-  labs(title = "Density of four distributions",
-       x = "n", y = "P(N=n)") +
+  labs(x = "n", y = "P(N=n)") +
   scale_color_manual(values = color_palette, breaks = c("Geometric", "Sum of two geometric", "Sum of three geometric", "Uniform")) +
   scale_x_continuous(limits = c(1, 1500), breaks = c(1, seq(250, 1500, by = 250))) +  # Start at 1 and set breaks
-  theme_minimal() +
+  theme_bw() +
   theme(legend.title = element_blank())
 
 ggsave("figs/pmf.png", width = 7, height = 5)
