@@ -1,9 +1,13 @@
 {
     "sortOrder": [
         {
+            "columnIndex": 3,
+            "ascending": false
+        },
+        {
             "columnIndex": 2,
             "ascending": true
         }
     ],
-    "path": "~/Documents/GitHub/gene-conversion-mean-lengths/final_code_and_output/robustness_sim"
+    "path": "~/Documents/GitHub/gene-conversion-mean-lengths"
 }

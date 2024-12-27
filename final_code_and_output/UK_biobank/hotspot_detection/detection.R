@@ -1,3 +1,5 @@
+### This file calculates the recombination rate between adjacent markers from chromosomes in the UK Biobank whole autosome data.
+
 library(dplyr)
 
 calc_cM_per_bp <- function(df) {

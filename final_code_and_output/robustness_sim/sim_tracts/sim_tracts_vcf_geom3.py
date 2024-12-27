@@ -1,3 +1,6 @@
+### This file is used to simulate gene conversion tracts on individuals from the coalescent simulation.
+### Gene conversion tracts are drawn from a sum of three geometric random variables.
+
 import allel
 import time
 import numpy as np
@@ -138,7 +141,7 @@ for iteration in range(num_iterations):
     print(iteration)
     
     # Simulate gene conversion tracts
-    gene_conversion_tracts = sim_tracts(N, min(filtered_positions), max(filtered_positions), "geom")
+    gene_conversion_tracts = sim_tracts(N, min(filtered_positions), max(filtered_positions), "geom3")
     
     # Define function with prespecified positions
     fixed_positions_sim_gene_conv = partial(sim_gene_conv, positions=filtered_positions, genotypes=filtered_genotypes)
@@ -164,6 +167,6 @@ for iteration in range(num_iterations):
     all_data.extend(L_with_iteration)
 
 # Write the concatenated results to a CSV file
-with open('sim_tracts_vcf_geom_multiple_iterations.csv', 'w', newline='') as file:
+with open('sim_tracts_vcf_geom3_multiple_iterations.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerows(all_data)

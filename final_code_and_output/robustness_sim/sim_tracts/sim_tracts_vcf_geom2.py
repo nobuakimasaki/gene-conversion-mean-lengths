@@ -1,3 +1,6 @@
+### This file is used to simulate gene conversion tracts on individuals from the coalescent simulation.
+### Gene conversion tracts are drawn from a sum of two geometric random variables.
+
 import allel
 import time
 import numpy as np

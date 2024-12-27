@@ -1,3 +1,6 @@
+### This file is used to fit the model on the tracts generated from individuals in the coalescent simulation.
+### We split the model fitting into iterations 1 to 50 and 51 to 100 when generating tracts from a uniform distribution.
+
 library(data.table)
 library(purrr)
 library(parallel)
@@ -76,12 +79,12 @@ fit_model_M <- function(df, MAF.df, M, region, MAF.ceil) {
 
 MAF.chrom.1 <- read.MAF(1)
 
-tracts_geom <- read.csv("sim_tracts_vcf_geom_multiple_iterations.csv")
-colnames(tracts_geom) <- c("V1", "V2", "length", "iter")
-#tracts_geom <- dplyr::filter(tracts_geom, iter <= 19)
-tracts_geom <- dplyr::select(tracts_geom, -length)
-tracts_geom_df_list <- split(tracts_geom, tracts_geom$iter)
-res_geom <- lapply(tracts_geom_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)
+tracts_unif <- read.csv("sim_tracts_vcf_unif_multiple_iterations.csv")
+colnames(tracts_unif) <- c("V1", "V2", "length", "iter")
+tracts_unif <- dplyr::filter(tracts_unif, iter >= 50)
+tracts_unif <- dplyr::select(tracts_unif, -length)
+tracts_unif_df_list <- split(tracts_unif, tracts_unif$iter)
+res_unif <- lapply(tracts_unif_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)
 
-saveRDS(res_geom, "res.sim.2M.1500.region.5000.geom.MAF.0.5.boot.keep.ends.rds")
+saveRDS(res_unif, "res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.2.rds")
 

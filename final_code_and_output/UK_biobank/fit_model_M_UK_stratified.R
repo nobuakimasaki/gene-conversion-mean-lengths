@@ -1,3 +1,6 @@
+### This file is used to fit the model on the tracts detected from the UK Biobank whole autosome data.
+### We also fit the model separately on tracts overlapping with hotspots and tracts not overlapping with hotspots.
+
 library(data.table)
 library(purrr)
 library(parallel)

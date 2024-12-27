@@ -1,3 +1,5 @@
+### This file is used to fit the model on the tracts generated from individuals in the coalescent simulation.
+
 library(data.table)
 library(purrr)
 library(parallel)
@@ -53,7 +55,7 @@ fit_model_M <- function(df, MAF.df, M, region, MAF.ceil) {
   tracts_lst <- split(df, seq(nrow(df)))
   psi_lst <- lapply(tracts_lst, est_psi, psi = psi, region = region, length_chrom = length(psi), debias = FALSE)
   l_lst <- lapply(tracts_lst, function(x) {x[2]-x[1]+1})
-  
+
   keep <- which( df$V2 - df$V1 + 1 <= M & df$V2 - df$V1 + 1 > 1)
   
   psi_lst_filt <- psi_lst[keep]
@@ -61,7 +63,7 @@ fit_model_M <- function(df, MAF.df, M, region, MAF.ceil) {
   
   print(psi_lst_filt %>% unlist())
   print(l_lst_filt %>% unlist())
-  
+
   optim.out.geom <- optim(0.005, neg_log_lik, psi_lst = psi_lst_filt, pL = pL_geom_2M,
                           l_lst = l_lst_filt, M = M, lower = 0.0001, upper = 0.05, method = "Brent")
   optim.out.geom2 <- optim(0.005, neg_log_lik, psi_lst = psi_lst_filt, pL = pL_geom2_2M,
@@ -76,12 +78,12 @@ fit_model_M <- function(df, MAF.df, M, region, MAF.ceil) {
 
 MAF.chrom.1 <- read.MAF(1)
 
-tracts_unif <- read.csv("sim_tracts_vcf_unif_multiple_iterations.csv")
-colnames(tracts_unif) <- c("V1", "V2", "length", "iter")
-tracts_unif <- dplyr::filter(tracts_unif, iter <= 49)
-tracts_unif <- dplyr::select(tracts_unif, -length)
-tracts_unif_df_list <- split(tracts_unif, tracts_unif$iter)
-res_unif <- lapply(tracts_unif_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)
+tracts_geom3 <- read.csv("sim_tracts_vcf_geom3_multiple_iterations.csv")
+colnames(tracts_geom3) <- c("V1", "V2", "length", "iter")
+#tracts_geom3 <- dplyr::filter(tracts_geom3, iter <= 19)
+tracts_geom3 <- dplyr::select(tracts_geom3, -length)
+tracts_geom3_df_list <- split(tracts_geom3, tracts_geom3$iter)
+res_geom3 <- lapply(tracts_geom3_df_list, fit_model_M, MAF.chrom.1, 1500, 5000, 0.5)
 
-saveRDS(res_unif, "res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds")
+saveRDS(res_geom3, "res.sim.2M.1500.region.5000.geom3.MAF.0.5.boot.keep.ends.rds")
 

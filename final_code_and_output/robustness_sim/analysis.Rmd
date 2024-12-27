@@ -5,17 +5,18 @@ date: "2024-10-13"
 ---
 
 ```{r setup, include=FALSE}
+### This file is used to analyze the results from fitting the model on tracts generated from individuals in the coalescent simulation.
 library(dplyr)
 geom.res <- readRDS("res.sim.2M.1500.region.5000.geom.MAF.0.5.boot.keep.ends.rds")
 geom2.res <- readRDS("res.sim.2M.1500.region.5000.geom2.MAF.0.5.boot.keep.ends.rds") 
 geom3.res <- readRDS("res.sim.2M.1500.region.5000.geom3.MAF.0.5.boot.keep.ends.rds") 
-
 unif.1.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
 unif.2.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
 unif.res <- c(unif.1.res, unif.2.res)
 ```
 
 ```{r}
+### Getting point estimates
 geom.pnt.geom <- lapply(geom.res, function(x) {x[[1]][[1]]}) %>% unlist()
 geom2.pnt.geom <- lapply(geom2.res, function(x) {x[[1]][[1]]}) %>% unlist()
 geom3.pnt.geom <- lapply(geom3.res, function(x) {x[[1]][[1]]}) %>% unlist()
@@ -54,6 +55,7 @@ sd(2/unif.pnt.geom2)
 ```
 
 ```{r}
+### Getting AIC selected estimates
 geom.lik.geom <- lapply(geom.res, function(x) {x[[1]][[2]]}) %>% unlist()
 geom2.lik.geom <- lapply(geom2.res, function(x) {x[[1]][[2]]}) %>% unlist()
 geom3.lik.geom <- lapply(geom3.res, function(x) {x[[1]][[2]]}) %>% unlist()
@@ -71,6 +73,7 @@ unif.pnt.AIC <- ifelse(unif.lik.geom < unif.lik.geom2, 1/unif.pnt.geom, 2/unif.p
 ```
 
 ```{r}
+### bias and sample sd for AIC selected model
 mean(geom.pnt.AIC) - 300
 mean(geom2.pnt.AIC) - 300
 mean(geom3.pnt.AIC) - 300
@@ -83,6 +86,7 @@ sd(unif.pnt.AIC)
 ```
 
 ```{r}
+### Getting bootstrap confidence intervals 
 geom.boot <- lapply(geom.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
 geom2.boot <- lapply(geom2.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
 geom3.boot <- lapply(geom3.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow = TRUE, ncol = 2) %>% apply(2, function(x) quantile(x, probs = c(0.025, 0.975)))}) 
@@ -90,6 +94,7 @@ unif.boot <- lapply(unif.res, function(x) {x[[5]] %>% unlist() %>% matrix(byrow 
 ```
 
 ```{r}
+### Getting coverage for bootstrap CIs
 geom.coverage <- lapply(geom.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
 geom2.coverage <- lapply(geom2.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
 geom3.coverage <- lapply(geom3.boot, function(x) {c(x[1,1] <= 300 & 300 <= x[2,1], x[1,2] <= 300 & 300 <= x[2,2])}) %>% unlist() %>% matrix(byrow = TRUE, ncol = 2)
@@ -111,6 +116,8 @@ apply(unif.coverage, 2, sum)
 ```
 
 ```{r}
+### Supplementary Figure 2
+
 # Load the necessary libraries
 library(ggplot2)
 library(dplyr)
@@ -164,20 +171,20 @@ ggsave("figs/pmf.png", width = 7, height = 5)
 ```
 
 ```{r}
-### testing code
-geom.tracts <- read.csv("sim_tracts_vcf_geom_multiple_iterations.csv")
-geom.tracts.start <- geom.tracts[,1]
-geom.tracts.end <- geom.tracts[,2]
-
-read.MAF <- function(seed) {
-  str = paste0("sim5_seed", seed,
-               "_10Mb_n125000.gtstats")
-  df <- read.table(str)
-  return(df)
-}
-
-MAF.chr1 <- read.MAF(1)
-
-sum(geom.tracts.start %in% MAF.chr1$V2)
+# ### testing code
+# geom.tracts <- read.csv("sim_tracts_vcf_geom_multiple_iterations.csv")
+# geom.tracts.start <- geom.tracts[,1]
+# geom.tracts.end <- geom.tracts[,2]
+# 
+# read.MAF <- function(seed) {
+#   str = paste0("sim5_seed", seed,
+#                "_10Mb_n125000.gtstats")
+#   df <- read.table(str)
+#   return(df)
+# }
+# 
+# MAF.chr1 <- read.MAF(1)
+# 
+# sum(geom.tracts.start %in% MAF.chr1$V2)
 ```
 

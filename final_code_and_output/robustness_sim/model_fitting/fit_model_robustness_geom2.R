@@ -1,3 +1,5 @@
+### This file is used to fit the model on the tracts generated from individuals in the coalescent simulation.
+
 library(data.table)
 library(purrr)
 library(parallel)

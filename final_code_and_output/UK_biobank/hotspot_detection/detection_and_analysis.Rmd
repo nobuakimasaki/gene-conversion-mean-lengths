@@ -5,6 +5,8 @@ date: "2024-10-30"
 ---
 
 ```{r setup, include=FALSE}
+### This file takes in the recombination rates file and assigns recombination hotspots. We also analyze the results from fitting our model on tracts detected from the UK Biobank whole autosome data.
+
 library(ggplot2)
 library(dplyr)
 
@@ -59,6 +61,7 @@ hotspots.chrs.combined <- do.call(rbind, hotspots.chrs)
 ```
 
 ```{r}
+### Supplementary figure 1
 hotspots.chrs.combined.only.hotspots <- hotspots.chrs.combined %>% filter(hotspot == TRUE)
 hotspots.chrs.combined.only.hotspots %>% filter(length == max(length))
 
@@ -85,10 +88,12 @@ ggsave("../figs/Fig2.png", width = 7, height = 4)
 ```
 
 ```{r}
+### Getting results file from fitting model on tracts detected from the UK Biobank whole autosome data
 res.hotspot <- readRDS("../res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.hotspot.rds")
 res.not.hotspot <- readRDS("../res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.not.hotspot.rds")
 res <- readRDS("../res.UK_Biobank.1M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.grouped.keep.ends.rds")
 
+### Results from fitting on all tracts
 1/res[[1]][[1]]
 2/res[[2]][[1]]
 
@@ -101,6 +106,7 @@ lapply(res[[5]], function(x) {x[[2]]}) %>% unlist() %>% quantile(probs = c(0.025
 ```
 
 ```{r}
+### Results from fitting separately on both subsets of tracts
 1/res.hotspot[[1]][[1]]
 2/res.hotspot[[2]][[1]]
 
@@ -119,10 +125,3 @@ quantile(lapply(res.not.hotspot[[5]], function(x) {x[[2]]}) %>% unlist(), probs 
 2 + 2*res.not.hotspot[[1]][[2]]
 2 + 2*res.not.hotspot[[2]][[2]]
 ```
-```{r}
-# length(res.hotspot[[3]]) + length(res.not.hotspot[[3]])
-# length(res[[3]])
-# 
-# res[[4]]
-```
-

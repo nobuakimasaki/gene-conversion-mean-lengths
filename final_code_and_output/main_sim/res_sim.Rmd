@@ -6,11 +6,13 @@ output: html_document
 ---
 
 ```{r}
+### This file is used to analyze the results from the coalescent simulation
 library(ggplot2)
 library(purrr)
 library(dplyr)
 library(tidyr)
 
+### Read in file with estimates
 res.sim <- readRDS("res.sim.2M.1500.region.5000.ibdclust2cM.MAF.0.5.boot.keep.ends.rds")
 ```
 

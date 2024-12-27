@@ -1,3 +1,6 @@
+### This file is used to simulate gene conversion tracts on individuals from the coalescent simulation.
+### Gene conversion tracts are drawn from a geometric distribution.
+
 import allel
 import time
 import numpy as np
@@ -22,8 +25,7 @@ def sim_tracts(N_gene_conv, min_pos, max_pos, dist_N, mean = 300):
     elif dist_N == "geom2":
         lengths = np.random.geometric(2/mean, N_gene_conv) + np.random.geometric(2/mean, N_gene_conv)
     elif dist_N == "unif":
-        #lengths = np.random.uniform(low = 1, high = mean*2-1, size = N_gene_conv)
-        lengths = np.random.randint(low = 1, high = mean*2, size = N_gene_conv)
+        lengths = np.random.uniform(low = 1, high = mean*2-1, size = N_gene_conv)
     elif dist_N == "geom3":
         lengths = np.random.geometric(3/mean, N_gene_conv) + np.random.geometric(3/mean, N_gene_conv) + np.random.geometric(3/mean, N_gene_conv) 
     else:
@@ -139,7 +141,7 @@ for iteration in range(num_iterations):
     print(iteration)
     
     # Simulate gene conversion tracts
-    gene_conversion_tracts = sim_tracts(N, min(filtered_positions), max(filtered_positions), "unif")
+    gene_conversion_tracts = sim_tracts(N, min(filtered_positions), max(filtered_positions), "geom")
     
     # Define function with prespecified positions
     fixed_positions_sim_gene_conv = partial(sim_gene_conv, positions=filtered_positions, genotypes=filtered_genotypes)
@@ -165,6 +167,6 @@ for iteration in range(num_iterations):
     all_data.extend(L_with_iteration)
 
 # Write the concatenated results to a CSV file
-with open('sim_tracts_vcf_unif_multiple_iterations.csv', 'w', newline='') as file:
+with open('sim_tracts_vcf_geom_multiple_iterations.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerows(all_data)

@@ -1,3 +1,5 @@
+### This file is used to fit the model on the detected gene conversion tracts from the coalescent simulation
+
 library(data.table)
 library(purrr)
 library(parallel)
@@ -7,6 +9,7 @@ set.seed(26)
 # Detect the number of available cores
 num_cores <- 24
 
+# Function to load observed tract lengths from one region
 read.tracts <- function(seed, MAF) {
   if (MAF == 0.5) {
     str = paste0("/projects/browning/brwnlab/sharon/for_nobu/gc_length/sim5_data/sim5_seed", seed,
@@ -24,6 +27,7 @@ read.tracts <- function(seed, MAF) {
   return(df)
 }
 
+# Function to read MAF file from one region
 read.MAF <- function(seed) {
   str = paste0("/projects/browning/brwnlab/sharon/for_nobu/gc_length/sim5_data/sim5_seed", seed,
                "_10Mb_n125000.gtstats")
@@ -31,10 +35,11 @@ read.MAF <- function(seed) {
   return(df)
 }
 
+# Load in all observed tract lengths and all MAF files
 tracts.df.list.0.5 <- lapply(1:20, read.tracts, MAF = 0.5)
-
 MAF.df.list <- lapply(1:20, read.MAF)
 
+# Function for bootstrap estimates
 boot_MLE_M <- function(x, l_lst, psi_lst, M) {
   ind <- sample(1:length(l_lst), replace = TRUE)
   l_lst_boot <- l_lst[ind]
@@ -49,6 +54,7 @@ boot_MLE_M <- function(x, l_lst, psi_lst, M) {
   return(c(1/optim.out.geom$par, 2/optim.out.geom2$par))
 }
 
+# Function to fit model on each region
 fit_model_M <- function(MAF.df, df, M, region, MAF.ceil) {
   
   # to make indexing easier
