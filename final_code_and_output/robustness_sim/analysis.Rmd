@@ -7,11 +7,11 @@ date: "2024-10-13"
 ```{r setup, include=FALSE}
 ### This file is used to analyze the results from fitting the model on tracts generated from individuals in the coalescent simulation.
 library(dplyr)
-geom.res <- readRDS("res.sim.2M.1500.region.5000.geom.MAF.0.5.boot.keep.ends.rds")
-geom2.res <- readRDS("res.sim.2M.1500.region.5000.geom2.MAF.0.5.boot.keep.ends.rds") 
-geom3.res <- readRDS("res.sim.2M.1500.region.5000.geom3.MAF.0.5.boot.keep.ends.rds") 
-unif.1.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
-unif.2.res <- readRDS("res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
+geom.res <- readRDS("model_fitting/res.sim.2M.1500.region.5000.geom.MAF.0.5.boot.keep.ends.rds")
+geom2.res <- readRDS("model_fitting/res.sim.2M.1500.region.5000.geom2.MAF.0.5.boot.keep.ends.rds") 
+geom3.res <- readRDS("model_fitting/res.sim.2M.1500.region.5000.geom3.MAF.0.5.boot.keep.ends.rds") 
+unif.1.res <- readRDS("model_fitting/res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
+unif.2.res <- readRDS("model_fitting/res.sim.2M.1500.region.5000.unif.MAF.0.5.boot.keep.ends.1.rds") 
 unif.res <- c(unif.1.res, unif.2.res)
 ```
 
