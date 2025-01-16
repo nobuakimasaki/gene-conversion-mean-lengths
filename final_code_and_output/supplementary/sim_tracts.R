@@ -1,6 +1,6 @@
 ### This file simulates gene conversion tracts without linkage disequilibrium. 
 ### Additionally, we fit the model to the generated tracts, but this part of the code is not used in the Supplementary Materials
-### Futhermore, we only use res.geom.rds in Supplementary Materials
+### Furthermore, we only use res.geom.rds in Supplementary Materials
 
 library(dplyr)
 library(data.table)
@@ -24,11 +24,7 @@ boot_MLE <- function(x, l_lst, psi_lst, M) {
 
 # Read in Chromosome 1 from UK Biobank whole autosome data
 MAF.df <- read.table("/projects/browning/brwnlab/sharon/for_nobu/gc_length/ukbiobank/chr1.allregions.pmaf.gz")
-# Read in detected gene conversion tracts from Chromosome 1
-tracts.df <- read.table("/projects/browning/brwnlab/sharon/for_nobu/gc_length/ukbiobank/chr1.ibdclust2cM_trim1_combinedoffsets_v6.inf_obs_tracts2")
-
 print(head(MAF.df))
-print(head(tracts.df))
 
 # Add 1 to position index
 MAF.df$pos <- MAF.df$V2 + 1
